@@ -12,6 +12,7 @@
 
 import java.util.*;
 import set.*;
+import graph.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -307,7 +308,6 @@ public class Maze {
     while (sc.hasNext()) {
       fileContent.append(sc.nextLine());
     }
-    //mazeData = fileContent.substring(1);
     mazeData = fileContent.substring(1).replaceAll("\\s+","");
     mazeSize = Integer.parseInt(fileContent.substring(0,1));
   }
@@ -332,11 +332,16 @@ public class Maze {
       } catch (Exception ex) {
         ex.printStackTrace();
       }
-
+        
       // todo - remove this.
-      // Just a teset to make sure vars get update with data from file.
+      // Just a test to make sure vars get update with data from file.
       System.out.println("mazeSize = " + mazeSize);
       System.out.println("mazeData = " + mazeData);
+      int numCells = mazeData.length()/cellWalls;
+      MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph
+      mazeGraph.populateMazeGraph(mazeData); // populate the graph
+      System.out.println("\nAdjacency List:");
+      System.out.print(mazeGraph); // print the graph
       // End test.
 
     } else { // Original untouched program here.

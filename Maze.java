@@ -12,6 +12,8 @@
 
 import java.util.*;
 import set.*;
+import java.io.File;
+import java.io.IOException;
 
 /**
  *  The Maze class represents a maze in a rectangular grid.  There is exactly
@@ -38,6 +40,10 @@ public class Maze {
   private static final int FROMABOVE = 3;
   private static final int FROMBELOW = 4;
 
+  // Vars for use with the code pertaining to reading maze data from a file, and processing it
+  public static int mazeSize; // "size" of maze, meaning either width or height
+  public static String mazeData; // String of 1's and 0's representing the maze
+  public static int cellWalls = 4; // Number of walls in each cell
  
   public Maze(int horizontalSize, int verticalSize) {
     int i, j;
@@ -289,43 +295,87 @@ public class Maze {
   }
 
   /**
+   * readFile() takes in a String, which is the name of a file and reads the data from
+   * that file into mazeSize and mazeData
+   * @param filename - Name of file
+   * @throws IOException - Catches IOExceptions
+   */
+  // readFile sets mazeText and mazeSize static variables from "filename" passed.
+  public static void readFile(File filename) throws IOException {
+    Scanner sc = new Scanner(filename);
+    StringBuilder fileContent = new StringBuilder();
+    while (sc.hasNext()) {
+      fileContent.append(sc.nextLine());
+    }
+    //mazeData = fileContent.substring(1);
+    mazeData = fileContent.substring(1).replaceAll("\\s+","");
+    mazeSize = Integer.parseInt(fileContent.substring(0,1));
+  }
+
+  /**
    * main() creates a maze of dimensions specified on the command line, prints
    * the maze, and runs the diagnostic method to see if the maze is good.
    * found from U washington test bench code and edited to fit our purpose
    */
   public static void main(String[] args) {
-     Scanner input= new Scanner(System.in);
-     System.out.println("please enter the horizontal size of maze");
-    int x = input.nextInt();
-    System.out.println("please enter the verticle size of maze");
-    int y = input.nextInt();
+    
+    // Breaking the project into two main parts here.
+    // 1) If filename argument is passed, read file and take action.
+    // 2) Else, run program in its original state.
 
-    /**
-     *  Read the input parameters.
-     * 
-     */
-
-    if (args.length > 0) {
+    // Read data file from the first argument on the command line passed.
+    if (args.length != 0) {
+      // read in a file
+      File filename = new File(args[0]);
       try {
-        x = Integer.parseInt(args[0]);
+        readFile(filename);
+      } catch (Exception ex) {
+        ex.printStackTrace();
       }
-      catch (NumberFormatException e) {
-        System.out.println("First argument to Simulation is not an number.");
+
+      // todo - remove this.
+      // Just a teset to make sure vars get update with data from file.
+      System.out.println("mazeSize = " + mazeSize);
+      System.out.println("mazeData = " + mazeData);
+      // End test.
+
+    } else { // Original untouched program here.
+
+      Scanner input= new Scanner(System.in);
+      System.out.println("please enter the horizontal size of maze");
+      int x = input.nextInt();
+      System.out.println("please enter the verticle size of maze");
+      int y = input.nextInt();
+
+      /**
+       *  Read the input parameters.
+       * 
+       */
+
+      if (args.length > 0) {
+        try {
+          x = Integer.parseInt(args[0]);
+        }
+        catch (NumberFormatException e) {
+          System.out.println("First argument to Simulation is not an number.");
+        }
       }
+
+      if (args.length > 1) {
+        try {
+          y = Integer.parseInt(args[1]);
+        }
+        catch (NumberFormatException e) {
+          System.out.println("Second argument to Simulation is not an number.");
+        }
+      }
+
+      Maze maze = new Maze(x, y);
+      System.out.print(maze);
+      maze.diagnose();
+
     }
 
-    if (args.length > 1) {
-      try {
-        y = Integer.parseInt(args[1]);
-      }
-      catch (NumberFormatException e) {
-        System.out.println("Second argument to Simulation is not an number.");
-      }
-    }
-
-    Maze maze = new Maze(x, y);
-    System.out.print(maze);
-    maze.diagnose();
   }
 
 }

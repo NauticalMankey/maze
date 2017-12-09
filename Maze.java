@@ -335,13 +335,18 @@ public class Maze {
         
       // todo - remove this.
       // Just a test to make sure vars get update with data from file.
-      System.out.println("mazeSize = " + mazeSize);
-      System.out.println("mazeData = " + mazeData);
-      int numCells = mazeData.length()/cellWalls;
-      MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph
-      mazeGraph.populateMazeGraph(mazeData); // populate the graph
-      System.out.println("\nAdjacency List:");
-      System.out.print(mazeGraph); // print the graph
+	      int numCells = mazeData.length()/cellWalls;
+	      System.out.println("---------------------Print metadata during testing.---------------------");
+	      System.out.println("mazeSize = " + mazeSize);
+	      System.out.println("mazeData = " + mazeData);
+	      System.out.println("numWalls = " + numCells);
+	      MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph with number of cells
+	      mazeGraph.populateMazeGraph(mazeData); // populate the graph with the data in 0's and 1's format
+	      System.out.println("\nAdjacency List:");
+	      System.out.println("---------------\n");
+	      System.out.print(mazeGraph); // print the graph via its toString()
+	      System.out.println();
+	      System.out.println("---------------------End metadata-------------");
       // End test.
 
     } else { // Original untouched program here.

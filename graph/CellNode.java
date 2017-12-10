@@ -10,6 +10,7 @@ public class CellNode {
     private boolean eastWall;
     private boolean westWall;
     private int id;
+    public int parent = 0;
 
     public CellNode(boolean northWall, boolean southWall, boolean eastWall, boolean westWall) {
         visited = false;

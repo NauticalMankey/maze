@@ -1,8 +1,9 @@
 package graph;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Stack;
+
+import java.util.*;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class MazeGraphSolver {
 
@@ -10,13 +11,13 @@ public class MazeGraphSolver {
   public void MazeGraphSolver() {
   }
 
-  private static void printResults(MazeGraph mazeGraph, ArrayList path, CellNode currentCell) {
+  private static void printResults(MazeGraph mazeGraph, ArrayList path, CellNode currentCell, String type) {
 
     // ArrayList for reversing the reverse path
     ArrayList<Integer> reversedForward = new ArrayList<>();
 
     // Print forward path.
-    System.out.print("Rooms visited by DFS: ");
+    System.out.print("Rooms visited by " + type + ": ");
     for (int i = 0; i < path.size(); i++) {
       System.out.print(path.get(i) + " ");
     }
@@ -84,11 +85,75 @@ public class MazeGraphSolver {
 
   }
 
+  // reset all nodes to visited = false
+  private static void resetVisited(MazeGraph mazeGraph) {
+    for (int i = 0; i < mazeGraph.getMazeListSize(); i++){
+      mazeGraph.adjList.get(i).neighborArray.get(0).setVisited(false);
+    }
+  }
+
   public static void solveWithBFS(MazeGraph mazeGraph) {
+
+    // reset all nodes to visited = false
+    resetVisited(mazeGraph);
+
+    Queue<CellNode> queueLinkedList = new LinkedList<>();
+
+    // Create ArrayList to hold path
+    ArrayList<Integer> path = new ArrayList<>();
+
+    // Establish int for last cell Number
+    int lastCell = (mazeGraph.adjList.size() - 1);
+    // Create ArrayList to hold path
+    ArrayList<Integer> pathBFS = new ArrayList<>();
+    // Enqueue cell 0 into queueArrayList
+    queueLinkedList.offer(mazeGraph.adjList.get(0).neighborArray.get(0));
+    // Mark cell 0 as visited
+    mazeGraph.adjList.get(0).neighborArray.get(0).setVisited(true);
+
+    int parentID = 0;
+    // Establish currentCell
+    CellNode currentCell = queueLinkedList.peek();
+    currentCell.parent = parentID; // set initial parent to 0
+
+    while (!queueLinkedList.isEmpty()) {
+      // dequeue currentCell
+      currentCell = queueLinkedList.poll();
+
+      for (int i = 0; i < mazeGraph.adjList.get(currentCell.getId()).getNeighborArraySize(); i++) {
+
+        CellNode neighborCell = mazeGraph.adjList.get(currentCell.getId()).neighborArray.get(i);
+
+        if (!neighborCell.isVisited()) {
+          neighborCell.parent = currentCell.getId();
+          queueLinkedList.offer(neighborCell);
+          neighborCell.setVisited(true);
+        }
+
+      }
+
+      pathBFS.add(currentCell.getId());
+
+      // Exit found !
+      if (currentCell.getId() == lastCell) {
+        printResults(mazeGraph, pathBFS, currentCell, "BFS");
+        break;
+      }
+
+    }
 
   }
 
+
+
+
+
+
+
   public static void solveWithDFS(MazeGraph mazeGraph) {
+
+    // reset all nodes to visited = false
+    resetVisited(mazeGraph);
 
     Stack<CellNode> stackArrayList = new Stack<>();
 
@@ -108,7 +173,7 @@ public class MazeGraphSolver {
       path.add(currentCell.getId()); // add currentCell to path
       // If currentCell = (N-1), then break from the while-loop and print the path found
       if (currentCell.getId() == mazeGraph.adjList.get(lastCell).neighborArray.get(0).getId() ) {
-        printResults(mazeGraph, path, currentCell);
+        printResults(mazeGraph, path, currentCell, "DFS");
         break;
       }
 

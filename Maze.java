@@ -347,11 +347,13 @@ public class Maze {
 	      System.out.print(mazeGraph); // print the graph via its toString()
 	      System.out.println();
 	      System.out.println("---------------------End metadata-------------");
-	      // testing for solver
-	      System.out.println("\n");
+        // testing for solver
+        System.out.println("\n");
+        MazeGraphSolver.solveWithBFS(mazeGraph);
+        System.out.println();
         MazeGraphSolver.solveWithDFS(mazeGraph);
         System.out.println("\n");
-      // End test.
+        // End test.
 
     } else { // Original untouched program here.
 

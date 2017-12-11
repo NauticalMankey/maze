@@ -1,12 +1,87 @@
 package graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 
 public class MazeGraphSolver {
 
 
   public void MazeGraphSolver() {
+  }
+
+  private static void printResults(MazeGraph mazeGraph, ArrayList path, CellNode currentCell) {
+
+    // ArrayList for reversing the reverse path
+    ArrayList<Integer> reversedForward = new ArrayList<>();
+
+    // Print forward path.
+    System.out.print("Rooms visited by DFS: ");
+    for (int i = 0; i < path.size(); i++) {
+      System.out.print(path.get(i) + " ");
+    }
+    System.out.println();
+
+    // Print reverse path:
+    System.out.print("This is the path (in reverse): ");
+    int origin = 0;
+    int parent = currentCell.getId();
+
+    while (parent != origin) {
+      //System.out.println(currentCell.getId());
+      System.out.print(parent + " ");
+      reversedForward.add(parent); // add parent ID to reversedForward
+      parent = currentCell.parent;
+      currentCell = mazeGraph.adjList.get(parent).neighborArray.get(0);
+    }
+    reversedForward.add(parent); // add dangling parent ID to reversedForward
+    //reversedForward.add(0); // add parent ID "0" to reversedForward
+
+    System.out.println(parent + " ");
+    System.out.println("This is the path.");
+
+    /**
+     * Section from printing the resultant path
+     */
+    // Reverse reversedForward
+    Collections.reverse(reversedForward);
+
+    // Get the sqrt of the "size" for n
+    int n = (((int) Math.sqrt(mazeGraph.getMazeListSize() + 1)));
+
+    String[][] matrix = new String[n][n];
+
+    // Generate matrix
+    int cellCounter = 0; // counter for each cell
+    int cellPath = 0; // index in reverseForward Array
+    //reset currentCell to 0
+    currentCell = mazeGraph.adjList.get(reversedForward.get(cellPath)).neighborArray.get(0);
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        if (currentCell.getId() ==
+            cellCounter) {
+          matrix[i][j] = "X";
+          if (cellPath < reversedForward.size() - 1) {
+            cellPath++;
+            currentCell = mazeGraph.adjList.get(reversedForward.get(cellPath)).neighborArray.get(0);
+          }
+        } else {
+          matrix[i][j] = " ";
+        }
+        cellCounter++;
+      }
+    }
+
+    // Print solved path matrix
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+      System.out.print(matrix[i][j]);
+      }
+      System.out.println();
+    }
+
+    System.out.println("\n");
+
   }
 
   public static void solveWithBFS(MazeGraph mazeGraph) {
@@ -29,34 +104,11 @@ public class MazeGraphSolver {
     stackArrayList.push(mazeGraph.adjList.get(0).neighborArray.get(0)).setVisited(true);
 
     while (!stackArrayList.empty()) { // While stackArrayList not empty
-
       CellNode currentCell = stackArrayList.pop(); // Pop element and store it as currentCell
-
       path.add(currentCell.getId()); // add currentCell to path
-
       // If currentCell = (N-1), then break from the while-loop and print the path found
       if (currentCell.getId() == mazeGraph.adjList.get(lastCell).neighborArray.get(0).getId() ) {
-
-        // Print forward path.
-        System.out.print("Rooms visited by DFS: ");
-        for (int i = 0; i < path.size(); i++) {
-          System.out.print(path.get(i) + " ");
-        }
-        System.out.println();
-
-        // Print reverse path:
-        System.out.println("This is the path (in reverse):");
-        int origin = 0;
-        int parent = currentCell.getId();
-        while (parent != origin) {
-          //System.out.println(currentCell.getId());
-          System.out.print(parent + " ");
-          parent = currentCell.parent;
-          currentCell = mazeGraph.adjList.get(parent).neighborArray.get(0);
-        }
-        System.out.println(parent + " ");
-        System.out.println("\n");
-
+        printResults(mazeGraph, path, currentCell);
         break;
       }
 
@@ -64,15 +116,11 @@ public class MazeGraphSolver {
 
       // Push the reachable cells from this cell into stackArrayList
       for (int i = 0; i < nextRow.getNeighborArraySize(); i++) {
-
         if (!nextRow.neighborArray.get(i).isVisited()) {
-
           stackArrayList.push(nextRow.neighborArray.get(i));
           nextRow.neighborArray.get(i).setVisited(true);
           nextRow.neighborArray.get(i).parent = currentCell.getId();
-
         }
-
       }
 
     }

@@ -29,14 +29,12 @@ public class MazeGraphSolver {
     int parent = currentCell.getId();
 
     while (parent != origin) {
-      //System.out.println(currentCell.getId());
       System.out.print(parent + " ");
       reversedForward.add(parent); // add parent ID to reversedForward
       parent = currentCell.parent;
       currentCell = mazeGraph.adjList.get(parent).neighborArray.get(0);
     }
     reversedForward.add(parent); // add dangling parent ID to reversedForward
-    //reversedForward.add(0); // add parent ID "0" to reversedForward
 
     System.out.println(parent + " ");
     System.out.println("This is the path.");
@@ -53,37 +51,30 @@ public class MazeGraphSolver {
     String[][] matrix = new String[n][n];
 
     // Generate matrix
-    int cellCounter = 0; // counter for each cell
-    int cellPath = 0; // index in reverseForward Array
-    //reset currentCell to 0
-    currentCell = mazeGraph.adjList.get(reversedForward.get(cellPath)).neighborArray.get(0);
-    for (int i = 0; i < n; i++) {
+    int counter = 0; // int to count through cells
+    for (int i = 0; i < mazeGraph.getMazeListSize(); i+= n) {
       for (int j = 0; j < n; j++) {
-        if (currentCell.getId() ==
-            cellCounter) {
-          matrix[i][j] = "X";
-          if (cellPath < reversedForward.size() - 1) {
-            cellPath++;
-            currentCell = mazeGraph.adjList.get(reversedForward.get(cellPath)).neighborArray.get(0);
-          }
+        if (reversedForward.contains(i+j)) {
+          matrix[counter][j] = "X";
         } else {
-          matrix[i][j] = " ";
+          matrix[counter][j] = " ";
         }
-        cellCounter++;
       }
+      counter++;
     }
 
     // Print solved path matrix
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < n; j++) {
-      System.out.print(matrix[i][j]);
+        System.out.print(matrix[i][j]);
       }
       System.out.println();
     }
 
-    System.out.println("\n");
-
   }
+
+
+
 
   // reset all nodes to visited = false
   private static void resetVisited(MazeGraph mazeGraph) {

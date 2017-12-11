@@ -333,27 +333,32 @@ public class Maze {
         ex.printStackTrace();
       }
         
-      // todo - remove this.
+      // todo - remove this section
+      // Commenting out metadata for now
       // Just a test to make sure vars get update with data from file.
-	      int numCells = mazeData.length()/cellWalls;
-	      System.out.println("---------------------Print metadata during testing.---------------------");
-	      System.out.println("mazeSize = " + mazeSize);
-	      System.out.println("mazeData = " + mazeData);
-	      System.out.println("numWalls = " + numCells);
-	      MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph with number of cells
-	      mazeGraph.populateMazeGraph(mazeData); // populate the graph with the data in 0's and 1's format
-	      System.out.println("\nAdjacency List:");
-	      System.out.println("---------------\n");
-	      System.out.print(mazeGraph); // print the graph via its toString()
-	      System.out.println();
-	      System.out.println("---------------------End metadata-------------");
-        // testing for solver
-        System.out.println("\n");
-        MazeGraphSolver.solveWithBFS(mazeGraph);
-        System.out.println();
-        MazeGraphSolver.solveWithDFS(mazeGraph);
-        System.out.println("\n");
-        // End test.
+		   // System.out.println("---------------------Print metadata during testing.---------------------");
+		   // System.out.println("mazeSize = " + mazeSize);
+		   // System.out.println("mazeData = " + mazeData);
+		   // System.out.println("numWalls = " + numCells);
+		   // System.out.println("\nAdjacency List:");
+		   // System.out.println("---------------\n");
+		   // System.out.print(mazeGraph); // print the graph via its toString()
+		   // System.out.println();
+		   // System.out.println("---------------------End metadata-------------");
+
+      int numCells = mazeData.length()/cellWalls; // establish # of cells in maze
+      MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph with number of cells
+      mazeGraph.populateMazeGraph(mazeData); // populate the graph with the data in 0's and 1's format
+
+      // Displaying results
+      DisplayGraph.print(mazeData, mazeGraph);
+      // run the solver(s)
+      System.out.println("");
+      MazeGraphSolver.solveWithBFS(mazeGraph);
+      System.out.println();
+      MazeGraphSolver.solveWithDFS(mazeGraph);
+      System.out.println("");
+      // End displaying results
 
     } else { // Original untouched program here.
 

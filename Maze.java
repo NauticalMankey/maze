@@ -143,10 +143,10 @@ public class Maze {
    **/
   public String toString() {
     int i, j;
-    String s = "";
+    String s = "  ";
 
     // Print the top exterior wall.
-    for (i = 0; i < horiz; i++) {
+    for (i = 0; i < horiz-1; i++) {
       s = s + "--";
     }
     s = s + "-\n|";
@@ -163,7 +163,7 @@ public class Maze {
       }
       s = s + " |\n+";
       if (j < vert - 1) {
-        // Print a row of horizontal walls and wall corners.
+        // Print a row of horizontal walls
         for (i = 0; i < horiz; i++) {
           if (hWalls[i][j]) {
             s = s + "-+";
@@ -175,12 +175,11 @@ public class Maze {
       }
     }
 
-    // Print the bottom exterior wall.  (Note that the first corner has
-    // already been printed.)
-    for (i = 0; i < horiz; i++) {
+    // Print the bottom exterior wall with outlet 
+    for (i = 0; i < horiz-1; i++) {
       s = s + "--";
     }
-    return s + "\n";
+    return s + "  \n";
   }
 
   
@@ -200,8 +199,8 @@ public class Maze {
 
   
   private static int randInt(int choices) {
-    if (random == null) {       // Only executed first time randInt() is called
-      random = new Random();       // Create a "Random" object with random seed
+    if (random == null) {       
+      random = new Random();       // Create a "Random" object with random number
     }
     int r = random.nextInt() % choices;      // From 1 - choices to choices - 1
     if (r < 0) {
@@ -211,40 +210,7 @@ public class Maze {
   }
 
  
-  protected void diagnose() {
-    if ((horiz < 1) || (vert < 1) || ((horiz == 1) && (vert == 1))) {
-      return;                                    // There are no interior walls
-    }
-
-    boolean mazeFine = true;
-
-    // Create an array that indicates whether each cell has been visited during
-    // a depth-first traversal.
-    boolean[][] cellVisited = new boolean[horiz][vert];
-    // Do a depth-first traversal.
-    if (depthFirstSearch(0, 0, STARTHERE, cellVisited)) {
-      System.out.println("Your maze has a cycle.");
-      mazeFine = false;
-    }
-
-    // Check to be sure that every cell of the maze was visited.
-  outerLoop:
-    for (int j = 0; j < vert; j++) {
-      for (int i = 0; i < horiz; i++) {
-        if (!cellVisited[i][j]) {
-          System.out.println("Not every cell in your maze is reachable from " +
-                             "every other cell.");
-          mazeFine = false;
-          break outerLoop;
-        }
-      }
-    }
-
-    if (mazeFine) {
-      System.out.println("What a fine maze you've created!");
-    }
-  }
-
+  
  // depthFirstSearch() does a depth-first traversal of the maze, marking each
  
   protected boolean depthFirstSearch(int x, int y, int fromWhere,
@@ -393,8 +359,6 @@ public class Maze {
 
       Maze maze = new Maze(x, y);
       System.out.print(maze);
-      maze.diagnose();
-
     }
 
   }

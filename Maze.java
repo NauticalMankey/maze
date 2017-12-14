@@ -1,15 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author Justin
- */
-
-
 import java.util.*;
 import set.*;
 import graph.*;
@@ -278,11 +266,7 @@ public class Maze {
     mazeSize = Integer.parseInt(fileContent.substring(0,1));
   }
 
-  /**
-   * main() creates a maze of dimensions specified on the command line, prints
-   * the maze, and runs the diagnostic method to see if the maze is good.
-   * found from U washington test bench code and edited to fit our purpose
-   */
+  
   public static void main(String[] args) {
     
     // Breaking the project into two main parts here.

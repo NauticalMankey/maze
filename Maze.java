@@ -1,302 +1,53 @@
-import java.util.*;
-import set.*;
-import graph.*;
+/**
+ * Rat-in-a-maze
+ * Data Structures Project
+ * CIS 256 Data Structures: Java Fall 2017
+ * Professor Dr. Kamran Eftekhari
+ * 12/15/2017
+ * 
+ * @author Justin Buhay
+ * @author Justin Evans
+ * @author Farbod Ghiasi
+ * @author Bryan Woods
+ *
+ */
+
 import java.io.File;
 import java.io.IOException;
-
-/**
- *  The Maze class represents a maze in a rectangular grid.  There is exactly
- *  one path between any two points.
- **/
+import java.util.Scanner;
+import graph.DisplayGraph;
+import graph.MazeGraph;
+import graph.MazeGraphSolver;
+import java.util.Random;
 
 public class Maze {
 
-  // Horizontal and vertical dimensions of the maze.
-  protected int horiz;
-  protected int vert;
-  // Horizontal and vertical interior walls; each is true if the wall exists.
-  protected boolean[][] hWalls;
-  protected boolean[][] vWalls;
+  public static final int NORTH = 0;
+  public static final int SOUTH = 1;
+  public static final int EAST = 2;
+  public static final int WEST = 3;
 
-  // Object for generting random numbers.
-  private static Random random;
-
-  // Constants used in depth-first search (which checks for cycles in the
-  // maze).
-  private static final int STARTHERE = 0;
-  private static final int FROMLEFT = 1;
-  private static final int FROMRIGHT = 2;
-  private static final int FROMABOVE = 3;
-  private static final int FROMBELOW = 4;
+  public static int N;
+  public static int n;
+  public static int[] b;
 
   // Vars for use with the code pertaining to reading maze data from a file, and processing it
   public static int mazeSize; // "size" of maze, meaning either width or height
   public static String mazeData; // String of 1's and 0's representing the maze
   public static int cellWalls = 4; // Number of walls in each cell
- 
-  public Maze(int horizontalSize, int verticalSize) {
-    int i, j;
 
-    horiz = horizontalSize;
-    vert = verticalSize;
-    if ((horiz < 1) || (vert < 1) || ((horiz == 1) && (vert == 1))) {
-      return;                                    // There are no interior walls
-    }
-
-    // Create all of the horizontal interior walls.  Initially, every
-    // horizontal wall exists; they will be removed later by the maze
-    // generation algorithm.
-    if (vert > 1) {
-      hWalls = new boolean[horiz][vert - 1];
-      for (j = 0; j < vert - 1; j++) {
-        for (i = 0; i < horiz; i++) {
-          hWalls[i][j] = true;
-        }
-      }
-    }
-    // Create all of the vertical interior walls.
-    if (horiz > 1) {
-      vWalls = new boolean[horiz - 1][vert];
-      for (i = 0; i < horiz - 1; i++) {
-        for (j = 0; j < vert; j++) {
-          vWalls[i][j] = true;
-        }
-      }
-    }
-
-
-
- 
-    // Data structure for holding maze cell
-    DisjointSets cells = new DisjointSets(horiz*vert);
-    int num_horiz_walls = horiz*(vert-1);
-    int num_vert_walls = vert*(horiz-1);
-    // array to hold total number of walls
-    int[] walls= new int[num_horiz_walls+num_vert_walls];
-    for(int k=0;k<walls.length;k++) {
-        walls[k] = k;
-    }
-    // scramble the wall sequence
-    int tmp, pos;
-    for(int k=walls.length-1; k>0;k--) {
-        pos = randInt(k);
-        tmp = walls[pos];
-        walls[pos] = walls[k];
-        walls[k] = tmp;
-    }
-    // creating maze
-    int cella_x, cella_y, cellb_x, cellb_y;
-    int cella_idx, cellb_idx;
-    int root1, root2;
-    int walltype; // 0 for horizontal, 1 for vertical
-    for(int k=0; k<walls.length; k++) {
-        tmp = walls[k];
-        // this is horizontal walls
-        if(tmp <num_horiz_walls) {
-            cella_x = tmp%horiz;
-            cella_y = tmp/horiz;
-            cellb_x = cella_x;
-            cellb_y = cella_y+1;
-            walltype = 0;
-            assert(horizontalWall(cella_x, cella_y)==true);
-        } else { // vertical walls
-            tmp -= num_horiz_walls;
-            cella_x = tmp%(horiz-1);
-            cella_y = tmp/(horiz-1);
-            cellb_x = cella_x+1;
-            cellb_y = cella_y;
-            walltype = 1;
-            assert(verticalWall(cella_x,cella_y) == true);
-        }
-        cella_idx = cella_y*horiz+cella_x;
-        cellb_idx = cellb_y*horiz+cellb_x;
-        // check if they belong to the same set
-        root1 =cells.find(cella_idx);
-        root2 =cells.find(cellb_idx);
-        if(root1!=root2) {
-            cells.union(root1,root2);
-            // mark the wall as false
-            if(walltype==0) {
-                hWalls[cella_x][cella_y] = false;
-            } else {
-                vWalls[cella_x][cella_y] = false;
-            }
-        }
-    }
-
-  }
-
-  /**
-   *  toString() returns a string representation of the maze.
-   **/
-  public String toString() {
-    int i, j;
-    String s = "  ";
-
-    // Print the top exterior wall.
-    for (i = 0; i < horiz-1; i++) {
-      s = s + "--";
-    }
-    s = s + "-\n|";
-
-    // Print the maze interior.
-    for (j = 0; j < vert; j++) {
-      // Print a row of cells and vertical walls.
-      for (i = 0; i < horiz - 1; i++) {
-        if (vWalls[i][j]) {
-          s = s + " |";
-        } else {
-          s = s + "  ";
-        }
-      }
-      s = s + " |\n+";
-      if (j < vert - 1) {
-        // Print a row of horizontal walls
-        for (i = 0; i < horiz; i++) {
-          if (hWalls[i][j]) {
-            s = s + "-+";
-          } else {
-            s = s + " +";
-          }
-        }
-        s = s + "\n|";
-      }
-    }
-
-    // Print the bottom exterior wall with outlet 
-    for (i = 0; i < horiz-1; i++) {
-      s = s + "--";
-    }
-    return s + "  \n";
-  }
-
-  
-  public boolean horizontalWall(int x, int y) {
-    if ((x < 0) || (y < 0) || (x > horiz - 1) || (y > vert - 2)) {
-      return true;
-    }
-    return hWalls[x][y];
-  }
-
-  public boolean verticalWall(int x, int y) {
-    if ((x < 0) || (y < 0) || (x > horiz - 2) || (y > vert - 1)) {
-      return true;
-    }
-    return vWalls[x][y];
-  }
-
-  
-  private static int randInt(int choices) {
-    if (random == null) {       
-      random = new Random();       // Create a "Random" object with random number
-    }
-    int r = random.nextInt() % choices;      // From 1 - choices to choices - 1
-    if (r < 0) {
-      r = -r;                                          // From 0 to choices - 1
-    }
-    return r;
-  }
-
- 
-  
- // depthFirstSearch() does a depth-first traversal of the maze, marking each
- 
-  protected boolean depthFirstSearch(int x, int y, int fromWhere,
-                                     boolean[][] cellVisited) {
-    boolean cycleDetected = false;
-    cellVisited[x][y] = true;
-
-    // Visit the cell to the right?
-    if ((fromWhere != FROMRIGHT) && !verticalWall(x, y)) {
-      if (cellVisited[x + 1][y]) {
-        cycleDetected = true;
-      } else {
-        cycleDetected = depthFirstSearch(x + 1, y, FROMLEFT, cellVisited) ||
-                        cycleDetected;
-      }
-    }
-
-    // Visit the cell below?
-    if ((fromWhere != FROMBELOW) && !horizontalWall(x, y)) {
-      if (cellVisited[x][y + 1]) {
-        cycleDetected = true;
-      } else {
-        cycleDetected = depthFirstSearch(x, y + 1, FROMABOVE, cellVisited) ||
-                        cycleDetected;
-      }
-    }
-
-    // Visit the cell to the left?
-    if ((fromWhere != FROMLEFT) && !verticalWall(x - 1, y)) {
-      if (cellVisited[x - 1][y]) {
-        cycleDetected = true;
-      } else {
-        cycleDetected = depthFirstSearch(x - 1, y, FROMRIGHT, cellVisited) ||
-                        cycleDetected;
-      }
-    }
-
-    // Visit the cell above?
-    if ((fromWhere != FROMABOVE) && !horizontalWall(x, y - 1)) {
-      if (cellVisited[x][y - 1]) {
-        cycleDetected = true;
-      } else {
-        cycleDetected = depthFirstSearch(x, y - 1, FROMBELOW, cellVisited) ||
-                        cycleDetected;
-      }
-    }
-
-    return cycleDetected;
-  }
-
-  /**
-   * readFile() takes in a String, which is the name of a file and reads the data from
-   * that file into mazeSize and mazeData
-   * @param filename - Name of file
-   * @throws IOException - Catches IOExceptions
-   */
-  // readFile sets mazeText and mazeSize static variables from "filename" passed.
-  public static void readFile(File filename) throws IOException {
-    Scanner sc = new Scanner(filename);
-    StringBuilder fileContent = new StringBuilder();
-    while (sc.hasNext()) {
-      fileContent.append(sc.nextLine());
-    }
-    mazeData = fileContent.substring(1).replaceAll("\\s+","");
-    mazeSize = Integer.parseInt(fileContent.substring(0,1));
-  }
-
-  
   public static void main(String[] args) {
-    
-    // Breaking the project into two main parts here.
-    // 1) If filename argument is passed, read file and take action.
-    // 2) Else, run program in its original state.
 
-    // Read data file from the first argument on the command line passed.
     if (args.length != 0) {
-      // read in a file
+      // readFile
       File filename = new File(args[0]);
       try {
         readFile(filename);
       } catch (Exception ex) {
         ex.printStackTrace();
       }
-        
-      // todo - remove this section
-      // Commenting out metadata for now
-      // Just a test to make sure vars get update with data from file.
-		   // System.out.println("---------------------Print metadata during testing.---------------------");
-		   // System.out.println("mazeSize = " + mazeSize);
-		   // System.out.println("mazeData = " + mazeData);
-		   // System.out.println("numWalls = " + numCells);
-		   // System.out.println("\nAdjacency List:");
-		   // System.out.println("---------------\n");
-		   // System.out.print(mazeGraph); // print the graph via its toString()
-		   // System.out.println();
-		   // System.out.println("---------------------End metadata-------------");
 
-      int numCells = mazeData.length()/cellWalls; // establish # of cells in maze
+      int numCells = mazeData.length() / cellWalls; // establish # of cells in maze
       MazeGraph mazeGraph = new MazeGraph(numCells); // initialize a new graph with number of cells
       mazeGraph.populateMazeGraph(mazeData); // populate the graph with the data in 0's and 1's format
 
@@ -310,41 +61,285 @@ public class Maze {
       System.out.println("");
       // End displaying results
 
-    } else { // Original untouched program here.
+    } else {
+      Scanner sc = new Scanner(System.in);
+      System.out.print("Enter size of Maze: ");
 
-      Scanner input= new Scanner(System.in);
-      System.out.println("please enter the horizontal size of maze");
-      int x = input.nextInt();
-      System.out.println("please enter the verticle size of maze");
-      int y = input.nextInt();
-
-      /**
-       *  Read the input parameters.
-       * 
-       */
-
-      if (args.length > 0) {
-        try {
-          x = Integer.parseInt(args[0]);
-        }
-        catch (NumberFormatException e) {
-          System.out.println("First argument to Simulation is not an number.");
-        }
+      try {
+        n = Integer.parseInt(sc.nextLine());
+      }
+      catch (NumberFormatException e) {
+        System.out.println("Argument to simulation is not an number.");
       }
 
-      if (args.length > 1) {
-        try {
-          y = Integer.parseInt(args[1]);
-        }
-        catch (NumberFormatException e) {
-          System.out.println("Second argument to Simulation is not an number.");
-        }
+      N = n * n;
+      b = new int[N];
+      for (int i = 0; i < N; i++) {
+        b[i] = -1;
       }
 
-      Maze maze = new Maze(x, y);
-      System.out.print(maze);
+      generateRandomMaze(n);
+
     }
 
+  }
+
+  public static void generateRandomMaze(int n) {
+    N = n * n;
+    int[][] a = new int[N][4];
+    // Close everything for now.
+    for (int i = 0; i < N; i++) {
+      for (int j = 0; j < 4; j++) {
+        a[i][j] = 1;
+      }
+    }
+
+    // Leave north wall of start room open.
+    a[0][NORTH] = 0;
+
+    // Leave south wall of goal room open
+    a[n * n - 1][SOUTH] = 0;
+
+    // Close every north wall of first row (leaving the start room out)
+    for (int i = 1; i < n; i++) {
+      a[i][NORTH] = 1;
+    }
+
+    // Close every south wall of last row (leaving the goal room out)
+    for (int i = N - n; i < N - 1; i++) {
+      a[i][SOUTH] = 1;
+    }
+
+    // Close every west wall of first column
+    for (int i = 0; i < N; i++) {
+      if (i % n == 0) {
+        a[i][WEST] = 1;
+      }
+    }
+
+    // Close every east wall of last column
+    for (int i = 0; i < N; i++) {
+      if ((i + 1) % n == 0) {
+        a[i][EAST] = 1;
+      }
+    }
+
+    // Choose a random room
+    Random room = new Random();
+    Random side = new Random();
+    while (find(0) != find(N - 1)) {
+      int m = room.nextInt(N);
+
+      // case for when m is the start room
+      if (m == 0) {
+        int s = side.nextInt(2);
+        if (s == 0 && find(0) != find(n)) {
+
+          a[0][EAST] = 0;
+          a[1][WEST] = 0;
+          union(0, 1);
+        } else if (s == 1 && find(0) != find(1)) {
+          a[0][SOUTH] = 0;
+          a[n][NORTH] = 0;
+          union(0, n);
+        }
+        // case for when m is the top right corner room
+      } else if (m == n - 1) {
+        int s = side.nextInt(2);
+        if (s == 0 && find(n - 1) != find(n - 2)) {
+          a[n - 1][SOUTH] = 0;
+          a[(n - 1) + n][NORTH] = 0;
+          union(n - 1, n + (n - 1));
+        } else {
+          a[m][WEST] = 0;
+          a[m - 1][EAST] = 0;
+          union(m, m - 1);
+        }
+        // case for when m is the bottom left corner room
+      } else if (m == N - n) {
+        int s = side.nextInt(2);
+        if (s == 0) {
+          a[N - n][NORTH] = 0;
+          a[(N - n) - n][SOUTH] = 0;
+          union(N - n, (N - n) - n);
+        } else {
+          a[N - n][EAST] = 0;
+          a[(N - n) + 1][WEST] = 0;
+          union(N - n, (N - n) + 1);
+        }
+        // case for when m is the goal room
+      } else if (m == N - 1) {
+        int s = side.nextInt(2);
+        if (s == 0 && find(N - 1) != find(N - 2)) {
+          a[N - 1][NORTH] = 0;
+          a[(N - 1) - n][SOUTH] = 0;
+          union(N - 1, (N - 1) - n);
+        } else if (s == 1 && find(N - 1) != find((N - 1) - n)) {
+          a[N - 1][WEST] = 0;
+          a[N - 2][EAST] = 0;
+          union(N - 1, N - 2);
+        }
+        // case for when m is the top row but not the top right corner room or start
+        // room
+      } else if (m >= 1 && m < n - 1) {
+        int s = side.nextInt(3);
+        if (s == 0) {
+          a[m][EAST] = 0;
+          a[m + 1][WEST] = 0;
+          union(m, m + 1);
+        } else if (s == 1) {
+          a[m][SOUTH] = 0;
+          a[m + n][NORTH] = 0;
+          union(m, m + n);
+        } else {
+          a[m][WEST] = 0;
+          a[m - 1][EAST] = 0;
+          union(m, m - 1);
+        }
+        // case for when m is the first column except goal room
+      } else if (m % n == 0 && m > 1 && m < (N - n)) {
+        int s = side.nextInt(3);
+        if (s == 0) {
+          a[m][NORTH] = 0;
+          a[m - n][SOUTH] = 0;
+          union(m, m - n);
+        } else if (s == 1) {
+          a[m][SOUTH] = 0;
+          a[m + n][NORTH] = 0;
+          union(m, m + n);
+        } else {
+          a[m][EAST] = 0;
+          a[m + 1][WEST] = 0;
+          union(m, m + 1);
+        }
+        // case for when m is the last column of except the corner rooms
+      } else if ((m + 1) % n == 0 && m > n && m < (N - 1)) {
+        int s = side.nextInt(3);
+        if (s == 0) {
+          a[m][NORTH] = 0;
+          a[m - n][SOUTH] = 0;
+          union(m, m - n);
+        } else if (s == 1) {
+          a[m][SOUTH] = 0;
+          a[m + n][NORTH] = 0;
+          union(m, m + n);
+        } else {
+          a[m][WEST] = 0;
+          a[m - 1][EAST] = 0;
+          union(m, m - 1);
+        }
+        // case for when m is the bottom row besides corners
+      } else if (m < N - 1 && m > N - n) {
+        int s = side.nextInt(3);
+        if (s == 0) {
+          a[m][NORTH] = 0;
+          a[m - n][SOUTH] = 0;
+          union(m, m - n);
+        } else if (s == 1) {
+          a[m][EAST] = 0;
+          a[m + 1][WEST] = 0;
+          union(m, m + 1);
+        } else {
+          a[m][WEST] = 0;
+          a[m - 1][EAST] = 0;
+          union(m, m - 1);
+        }
+        // any middle room
+      } else {
+        int s = side.nextInt(4);
+        if (s == 0) {
+          a[m][NORTH] = 0;
+          a[m - n][SOUTH] = 0;
+          union(m, m - n);
+        } else if (s == 1) {
+          a[m][SOUTH] = 0;
+          a[m + n][NORTH] = 0;
+          union(m, m + n);
+        } else if (s == 2) {
+          a[m][EAST] = 0;
+          a[m + 1][WEST] = 0;
+          union(m, m + 1);
+        } else {
+          a[m][WEST] = 0;
+          a[m - 1][EAST] = 0;
+          union(m, m - 1);
+        }
+      }
+
+    } // end while
+
+    String maze = "";
+    for (int i = 0; i < N; i++) {
+      //System.out.println();
+      for (int j = 0; j < 4; j++) {
+        maze += a[i][j];
+        //System.out.print(" " + a[i][j]);
+
+      }
+    }
+    System.out.println("\n");
+    int numCells = maze.length() / 4;
+    MazeGraph mazeGraph = new MazeGraph(numCells);
+    mazeGraph.populateMazeGraph(maze);
+
+    // Displaying results
+    DisplayGraph.print(maze, mazeGraph);
+    // run the solver(s)
+    System.out.println("");
+    MazeGraphSolver.solveWithBFS(mazeGraph);
+    System.out.println();
+    MazeGraphSolver.solveWithDFS(mazeGraph);
+    System.out.println("");
+    System.out.println("\n");
+
+  } // End of generate maze
+
+  // find method, returns the root of the disjoint set
+  public static int find(int x) {
+    if (b[x] < 0) {
+      return x;
+    } else {
+      b[x] = find(b[x]);
+      return b[x];
+    }
+  }
+
+  // union method conjoins the two rooms into the same set
+  public static void union(int room1, int room2) {
+
+    int parentRoom1 = find(room1);
+    int parentRoom2 = find(room2);
+
+    if (parentRoom1 == parentRoom2) {
+      return;
+    }
+
+    if (b[parentRoom2] < b[parentRoom1]) {
+      b[parentRoom2] += b[parentRoom1];
+      b[parentRoom1] = parentRoom2;
+    } else {
+      b[parentRoom1] += b[parentRoom2];
+      b[parentRoom2] = parentRoom1;
+    }
+
+  }
+
+  /**
+   * readFile() takes in a String, which is the name of a file and reads the data from
+   * that file into mazeSize and mazeData
+   *
+   * @param filename - Name of file
+   * @throws IOException - Catches IOExceptions
+   */
+  // readFile sets mazeText and mazeSize static variables from "filename" passed.
+  public static void readFile(File filename) throws IOException {
+    Scanner sc = new Scanner(filename);
+    StringBuilder fileContent = new StringBuilder();
+    while (sc.hasNext()) {
+      fileContent.append(sc.nextLine());
+    }
+    mazeData = fileContent.substring(1).replaceAll("\\s+", "");
+    mazeSize = Integer.parseInt(fileContent.substring(0, 1));
   }
 
 }
